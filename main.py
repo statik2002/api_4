@@ -39,6 +39,10 @@ def get_spacex_latest_launches():
     fetch_spacex_last_launch('images', latest_launch_data)
 
 
+def get_file_ext(url):
+    pass
+
+
 def get_nasa_apod(api_key):
 
     url = 'https://api.nasa.gov/planetary/apod'
@@ -46,8 +50,6 @@ def get_nasa_apod(api_key):
     request_data = {
         'api_key':  api_key,
     }
-
-    print(api_key)
 
     response = requests.get(url, params=request_data)
     response.raise_for_status()
