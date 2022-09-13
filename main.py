@@ -40,7 +40,11 @@ def get_spacex_latest_launches():
 
 
 def get_file_ext(url):
-    pass
+
+    file_url, filename = os.path.split(urllib.parse.unquote(url))
+    file_name, file_ext = os.path.splitext(filename)
+
+    return file_ext
 
 
 def get_nasa_apod(api_key):
@@ -58,6 +62,8 @@ def get_nasa_apod(api_key):
 
     print(image_info['url'])
 
+    get_file_ext(image_info['url'])
+
 
 def main():
     parser = argparse.ArgumentParser(description='Загрузка фото в Telegram')
@@ -70,7 +76,7 @@ def main():
 
     while True:
         try:
-            #load_image('images/', url)
+
             #get_spacex_latest_launches()
 
             get_nasa_apod(token)
