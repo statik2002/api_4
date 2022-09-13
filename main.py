@@ -6,6 +6,7 @@ from pathlib import Path
 from pprint import pprint
 from urllib.parse import urljoin
 import requests
+from dotenv import load_dotenv
 
 
 def fetch_spacex_last_launch(path, latest_launch_data):
@@ -38,24 +39,48 @@ def get_spacex_latest_launches():
     fetch_spacex_last_launch('images', latest_launch_data)
 
 
+def get_nasa_apod(api_key):
+
+    url = 'https://api.nasa.gov/planetary/apod'
+
+    request_data = {
+        'api_key':  api_key,
+    }
+
+    print(api_key)
+
+    response = requests.get(url, params=request_data)
+    response.raise_for_status()
+
+    image_info = response.json()
+
+    print(image_info['url'])
+
+
 def main():
     parser = argparse.ArgumentParser(description='Загрузка фото в Telegram')
     args = parser.parse_args()
 
-    url = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/HST-SM4.jpeg'
+    load_dotenv()
+    token = os.environ['NASA_TOKEN']
+
+    latest_spacex_launch_url = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/HST-SM4.jpeg'
 
     while True:
         try:
             #load_image('images/', url)
-            get_spacex_latest_launches()
+            #get_spacex_latest_launches()
+
+            get_nasa_apod(token)
+
             return
 
         except requests.exceptions.ConnectionError:
             print(f'Нет связи')
             time.sleep(2)
 
-        except requests.exceptions.HTTPError:
-            print(f'Ошибка запроса')
+        except requests.exceptions.HTTPError as error:
+            print(f'Ошибка запроса {error}')
             break
 
         except requests.exceptions.URLRequired:
