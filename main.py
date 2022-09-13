@@ -2,29 +2,31 @@ import argparse
 import os.path
 import time
 import urllib.parse
+from pathlib import Path
 from pprint import pprint
 from urllib.parse import urljoin
 import requests
 
 
-def load_image(path, image_url):
+def fetch_spacex_last_launch(path, latest_launch_data):
 
-    response = requests.get(image_url)
-    response.raise_for_status()
+    for image_url in latest_launch_data['links']['flickr']['original']:
+        response = requests.get(image_url)
+        response.raise_for_status()
 
-    if response.ok:
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not Path(path).exists():
+            Path(path).mkdir()
 
         filename = urllib.parse.urlsplit(image_url).path.split('/')[-1]
 
-        with open(urljoin(path, filename), 'wb') as image_file:
+        with open(Path(path).joinpath(filename), 'wb') as image_file:
             image_file.write(response.content)
-        return
+
+    return
 
 
 def get_spacex_latest_launches():
-    latest_launches_url = 'https://api.spacexdata.com/v5/launches/latest'
+    latest_launches_url = 'https://api.spacexdata.com/v5/launches/5ef6a2bf0059c33cee4a828c'
 
     response = requests.get(latest_launches_url)
     response.raise_for_status()
@@ -33,8 +35,7 @@ def get_spacex_latest_launches():
         return
 
     latest_launch_data = response.json()
-
-    pprint(latest_launch_data)
+    fetch_spacex_last_launch('images', latest_launch_data)
 
 
 def main():
