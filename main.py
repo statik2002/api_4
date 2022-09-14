@@ -2,6 +2,7 @@ import argparse
 import os.path
 import time
 import urllib.parse
+from urllib.parse import urljoin, urlsplit
 from pathlib import Path
 from pprint import pprint
 from urllib.parse import urljoin
@@ -47,22 +48,37 @@ def get_file_ext(url):
     return file_ext
 
 
+def download_nasa_apod(url, folder):
+
+    response = requests.get(url)
+    response.raise_for_status()
+    file_url, filename = os.path.split(urllib.parse.unquote(url))
+    filepath = Path(folder).joinpath(filename)
+
+    with open(filepath, 'wb') as file:
+        file.write(response.content)
+
+
 def get_nasa_apod(api_key):
 
     url = 'https://api.nasa.gov/planetary/apod'
+    main_folder = 'images'
 
     request_data = {
         'api_key':  api_key,
+        'count': 10,
     }
 
     response = requests.get(url, params=request_data)
     response.raise_for_status()
 
-    image_info = response.json()
+    images_info = response.json()
 
-    print(image_info['url'])
+    Path(main_folder).mkdir(exist_ok=True)
 
-    get_file_ext(image_info['url'])
+    for image in images_info:
+        if get_file_ext(image['url']):
+            download_nasa_apod(image['url'], main_folder)
 
 
 def main():
