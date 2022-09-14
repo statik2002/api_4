@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import os.path
 import time
 import urllib.parse
@@ -10,18 +11,17 @@ import requests
 from dotenv import load_dotenv
 
 
-def fetch_spacex_last_launch(path, latest_launch_data):
+def fetch_spacex_last_launch(folder, latest_launch_data):
 
     for image_url in latest_launch_data['links']['flickr']['original']:
         response = requests.get(image_url)
         response.raise_for_status()
 
-        if not Path(path).exists():
-            Path(path).mkdir()
+        Path(folder).mkdir(exist_ok=True)
 
         filename = urllib.parse.urlsplit(image_url).path.split('/')[-1]
 
-        with open(Path(path).joinpath(filename), 'wb') as image_file:
+        with open(Path(folder).joinpath(filename), 'wb') as image_file:
             image_file.write(response.content)
 
     return
@@ -37,7 +37,7 @@ def get_spacex_latest_launches():
         return
 
     latest_launch_data = response.json()
-    fetch_spacex_last_launch('images', latest_launch_data)
+    return latest_launch_data
 
 
 def get_file_ext(url):
@@ -48,21 +48,45 @@ def get_file_ext(url):
     return file_ext
 
 
-def download_nasa_apod(url, folder):
+def download_nasa_images(nasa_images_urls, folder):
 
-    response = requests.get(url)
-    response.raise_for_status()
-    file_url, filename = os.path.split(urllib.parse.unquote(url))
-    filepath = Path(folder).joinpath(filename)
+    Path(folder).mkdir(exist_ok=True)
 
-    with open(filepath, 'wb') as file:
-        file.write(response.content)
+    for image_url in nasa_images_urls:
+        response = requests.get(image_url)
+        response.raise_for_status()
+        file_url, filename = os.path.split(urllib.parse.unquote(image_url))
+
+        filepath = Path(folder).joinpath(filename)
+
+        with open(filepath, 'wb') as file:
+            file.write(response.content)
+
+
+def download_nasa_epic_images(urls, folder, api_key):
+    """ input url - list of urls, folder - folder name, api_key - api_key from NASA API """
+
+    Path(folder).mkdir(exist_ok=True)
+
+    request_data = {
+        'api_key': api_key,
+    }
+
+    for url in urls:
+        response = requests.get(url, params=request_data)
+        response.raise_for_status()
+
+        file_url, filename = os.path.split(urllib.parse.unquote(url))
+
+        filepath = Path(folder).joinpath(filename)
+
+        with open(filepath, 'wb') as file:
+            file.write(response.content)
 
 
 def get_nasa_apod(api_key):
 
     url = 'https://api.nasa.gov/planetary/apod'
-    main_folder = 'images'
 
     request_data = {
         'api_key':  api_key,
@@ -74,11 +98,39 @@ def get_nasa_apod(api_key):
 
     images_info = response.json()
 
-    Path(main_folder).mkdir(exist_ok=True)
+    nasa_apod_images = []
 
     for image in images_info:
         if get_file_ext(image['url']):
-            download_nasa_apod(image['url'], main_folder)
+            nasa_apod_images.append(image['url'])
+
+    return nasa_apod_images
+
+
+def get_nasa_epic_urls(api_key):
+
+    url = 'https://api.nasa.gov/EPIC/api/natural/images'
+
+    request_data = {
+        'api_key': api_key,
+    }
+
+    response = requests.get(url, params=request_data)
+    response.raise_for_status()
+
+    epic_images_json = response.json()
+
+    images_url = []
+
+    for epic_image in epic_images_json:
+
+        filename = epic_image['image']
+
+        date_time = datetime.datetime.strptime(filename.split('_')[2], '%Y%m%d%H%M%S')
+
+        images_url.append(f'https://api.nasa.gov/EPIC/archive/natural/{date_time:%Y/%m/%d}/png/{filename}.png')
+
+    return images_url
 
 
 def main():
@@ -93,9 +145,14 @@ def main():
     while True:
         try:
 
-            #get_spacex_latest_launches()
+            latest_launch_data = get_spacex_latest_launches()
+            fetch_spacex_last_launch('spacex_launches', latest_launch_data)
 
-            get_nasa_apod(token)
+            nasa_apod_images = get_nasa_apod(token)
+            download_nasa_images(nasa_apod_images, 'nasa_apod')
+
+            nasa_epic_urls = get_nasa_epic_urls(token)
+            download_nasa_epic_images(nasa_epic_urls, 'nasa_epic', token)
 
             return
 
