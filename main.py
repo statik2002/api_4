@@ -16,9 +16,9 @@ def main():
     print(bot_params)
 
     updates = bot.get_updates()
-    print(updates[0])
+    chat_id = updates[0]['my_chat_member']['chat']['id']
 
-    bot.sendMessage(text='Hi from bot', chat_id=-1001348191260)
+    bot.sendMessage(text='Hi from bot', chat_id=chat_id)
 
 
 if __name__ == '__main__':
