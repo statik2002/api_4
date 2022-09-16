@@ -60,9 +60,9 @@ def main():
 
     while True:
         try:
-
+            Path('images').mkdir(exist_ok=True)
             nasa_apod_images = get_nasa_apod(token)
-            download_nasa_images(nasa_apod_images, 'nasa_apod')
+            download_nasa_images(nasa_apod_images, 'images/nasa_apod')
 
             return
 

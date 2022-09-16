@@ -69,8 +69,9 @@ def main():
     while True:
         try:
 
+            Path('images').mkdir(exist_ok=True)
             nasa_epic_urls = get_nasa_epic_urls(token)
-            download_nasa_epic_images(nasa_epic_urls, 'nasa_epic', token)
+            download_nasa_epic_images(nasa_epic_urls, 'images/nasa_epic', token)
 
             return
 

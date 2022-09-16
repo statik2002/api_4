@@ -130,6 +130,6 @@ dmypy.json
 
 .idea/
 
-nasa_apod/
-nasa_epic/
+images/nasa_apod/
+images/nasa_epic/
 spacex_launches/

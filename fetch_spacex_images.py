@@ -35,20 +35,13 @@ def fetch_spacex_last_launch(folder, latest_launch_data):
     return
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='скрипт загрузки фотографий запуска компании SpaceX'
-    )
-    parser.add_argument('-id', help='ID Запуска', default='latest')
-    args = parser.parse_args()
-
-    launch_id = args.id
+def main(launch_id='latest'):
 
     while True:
         try:
-
+            Path('images').mkdir(exist_ok=True)
             latest_launch_data = get_spacex_latest_launches(launch_id)
-            fetch_spacex_last_launch('spacex_launches', latest_launch_data)
+            fetch_spacex_last_launch('images/spacex_launches', latest_launch_data)
 
             return
 
@@ -66,4 +59,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description='скрипт загрузки фотографий запуска компании SpaceX'
+    )
+    parser.add_argument('--id', help='ID Запуска', default='latest')
+    args = parser.parse_args()
+
+    launch_id = args.id
+    main(launch_id)
