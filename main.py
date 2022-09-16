@@ -13,12 +13,11 @@ def main():
 
     bot_params = bot.get_me()
 
-    print(bot_params)
-
     updates = bot.get_updates()
     chat_id = updates[0]['my_chat_member']['chat']['id']
 
-    bot.sendMessage(text='Hi from bot', chat_id=chat_id)
+    bot.sendMessage(text='Look at this image', chat_id=chat_id)
+    bot.send_document(chat_id=chat_id, document=open('nasa_apod/beltofvenus_churchill.jpg', 'rb'))
 
 
 if __name__ == '__main__':
