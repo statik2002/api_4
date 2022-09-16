@@ -6,6 +6,8 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+from functions import download_images
+
 
 def get_nasa_epic_urls(api_key):
 
@@ -18,11 +20,11 @@ def get_nasa_epic_urls(api_key):
     response = requests.get(url, params=request_data)
     response.raise_for_status()
 
-    epic_images_json = response.json()
+    epic_images = response.json()
 
     images_url = []
 
-    for epic_image in epic_images_json:
+    for epic_image in epic_images:
 
         filename = epic_image['image']
 
@@ -39,28 +41,6 @@ def get_nasa_epic_urls(api_key):
     return images_url
 
 
-def download_nasa_epic_images(urls, folder, api_key):
-    """ input url - list of urls, folder - folder name,
-     api_key - api_key from NASA API """
-
-    Path(folder).mkdir(exist_ok=True)
-
-    request_data = {
-        'api_key': api_key,
-    }
-
-    for url in urls:
-        response = requests.get(url, params=request_data)
-        response.raise_for_status()
-
-        file_url, filename = os.path.split(urllib.parse.unquote(url))
-
-        filepath = Path(folder).joinpath(filename)
-
-        with open(filepath, 'wb') as file:
-            file.write(response.content)
-
-
 def main():
 
     load_dotenv()
@@ -71,10 +51,10 @@ def main():
 
             Path('images').mkdir(exist_ok=True)
             nasa_epic_urls = get_nasa_epic_urls(token)
-            download_nasa_epic_images(
+            download_images(
                 nasa_epic_urls,
                 'images/nasa_epic',
-                token
+                {'api_key': token}
             )
 
             return
